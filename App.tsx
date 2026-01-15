@@ -3,26 +3,31 @@ import React, { useState } from 'react';
 import { AppStep, AppState, ProjectType, RoomCount, FurnishingStatus, PaintQuality } from './types';
 import { INITIAL_ROOMS, PRICING } from './constants';
 import { Stepper } from './components/Stepper';
-import { 
-  Home, 
-  Building2, 
-  ChevronRight, 
-  ChevronLeft, 
-  LayoutPanelLeft, 
-  Box, 
-  Paintbrush, 
-  CheckCircle2, 
-  Lock, 
-  Mail, 
-  EyeOff, 
+import {
+  Home,
+  Building2,
+  ChevronRight,
+  ChevronLeft,
+  LayoutPanelLeft,
+  Box,
+  Paintbrush,
+  CheckCircle2,
+  Lock,
+  Mail,
+  EyeOff,
   ArrowRight,
   Globe,
   Sun,
-  Moon
+  Moon,
+  User,
+  ShieldCheck
 } from 'lucide-react';
+
+type AuthView = 'login' | 'register';
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authView, setAuthView] = useState<AuthView>('login');
   const [loginLoading, setLoginLoading] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [state, setState] = useState<AppState>({
@@ -35,7 +40,7 @@ const App: React.FC = () => {
     paintQuality: 'Standard',
   });
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleAuthSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoginLoading(true);
     setTimeout(() => {
@@ -74,7 +79,7 @@ const App: React.FC = () => {
   const commonCardClass = `bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-white dark:border-slate-800 transition-all duration-500 shadow-xl`;
 
   const ThemeToggle = () => (
-    <button 
+    <button
       onClick={toggleDarkMode}
       className="fixed top-6 right-6 p-3 rounded-2xl bg-white dark:bg-slate-800 shadow-xl text-gray-600 dark:text-yellow-400 hover:scale-110 active:scale-95 transition-all z-50 border border-gray-100 dark:border-slate-700"
       title={isDarkMode ? "Aydınlık Mod" : "Karanlık Mod"}
@@ -88,7 +93,7 @@ const App: React.FC = () => {
       <div className={`${isDarkMode ? 'dark' : ''}`}>
         <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-950 dark:to-slate-900 transition-colors duration-500">
           <ThemeToggle />
-          
+
           <div className="w-full max-w-sm animate-in fade-in zoom-in duration-700">
             <div className="text-center mb-6">
               <div className="inline-flex w-12 h-12 bg-blue-600 rounded-xl items-center justify-center text-white shadow-lg shadow-blue-200 dark:shadow-blue-900/20 mb-3 rotate-3">
@@ -99,15 +104,33 @@ const App: React.FC = () => {
             </div>
 
             <div className={`${commonCardClass} rounded-3xl p-8`}>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-5">Hoş Geldiniz</h2>
-              <form onSubmit={handleLogin} className="space-y-4">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-5">
+                {authView === 'login' ? 'Hoş Geldiniz' : 'Hesap Oluşturun'}
+              </h2>
+
+              <form onSubmit={handleAuthSubmit} className="space-y-4">
+                {authView === 'register' && (
+                  <div className="space-y-1.5 animate-in slide-in-from-top-2 duration-300">
+                    <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1">Ad Soyad</label>
+                    <div className="relative group">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-600 group-focus-within:text-blue-500 transition-colors" size={16} />
+                      <input
+                        required
+                        type="text"
+                        placeholder="Adınız Soyadınız"
+                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 outline-none transition-all font-medium text-sm dark:text-white"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1">E-Posta</label>
                   <div className="relative group">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-600 group-focus-within:text-blue-500 transition-colors" size={16} />
-                    <input 
+                    <input
                       required
-                      type="email" 
+                      type="email"
                       placeholder="ornek@mail.com"
                       className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 outline-none transition-all font-medium text-sm dark:text-white"
                     />
@@ -117,13 +140,15 @@ const App: React.FC = () => {
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center ml-1">
                     <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Şifre</label>
-                    <button type="button" className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700">Unuttum?</button>
+                    {authView === 'login' && (
+                      <button type="button" className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700">Unuttum?</button>
+                    )}
                   </div>
                   <div className="relative group">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-600 group-focus-within:text-blue-500 transition-colors" size={16} />
-                    <input 
+                    <input
                       required
-                      type="password" 
+                      type="password"
                       placeholder="••••••••"
                       className="w-full pl-10 pr-10 py-2.5 bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 outline-none transition-all font-medium text-sm dark:text-white"
                     />
@@ -133,13 +158,30 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
+                {authView === 'register' && (
+                  <div className="space-y-1.5 animate-in slide-in-from-top-2 duration-300">
+                    <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1">Şifre Tekrar</label>
+                    <div className="relative group">
+                      <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-600 group-focus-within:text-blue-500 transition-colors" size={16} />
+                      <input
+                        required
+                        type="password"
+                        placeholder="••••••••"
+                        className="w-full pl-10 pr-10 py-2.5 bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 outline-none transition-all font-medium text-sm dark:text-white"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-2 ml-1">
-                  <input type="checkbox" id="remember" className="w-3.5 h-3.5 rounded border-gray-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 dark:bg-slate-800" />
-                  <label htmlFor="remember" className="text-xs font-medium text-gray-500 dark:text-slate-400 cursor-pointer select-none">Beni Hatırla</label>
+                  <input type="checkbox" id="terms" className="w-3.5 h-3.5 rounded border-gray-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 dark:bg-slate-800" />
+                  <label htmlFor="terms" className="text-xs font-medium text-gray-500 dark:text-slate-400 cursor-pointer select-none">
+                    {authView === 'login' ? 'Beni Hatırla' : 'Kullanım Koşullarını Kabul Ediyorum'}
+                  </label>
                 </div>
 
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={loginLoading}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 group disabled:opacity-70 text-sm active:scale-[0.98]"
                 >
@@ -147,7 +189,7 @@ const App: React.FC = () => {
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
-                      Giriş Yap <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                      {authView === 'login' ? 'Giriş Yap' : 'Kayıt Ol'} <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                     </>
                   )}
                 </button>
@@ -158,7 +200,7 @@ const App: React.FC = () => {
                   <div className="absolute w-full h-px bg-gray-100 dark:bg-slate-800"></div>
                   <span className="relative px-3 bg-white dark:bg-slate-900 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Veya</span>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-3">
                   <button className="flex items-center justify-center gap-2 py-2 border border-gray-100 dark:border-slate-800 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors text-[11px] font-bold text-gray-600 dark:text-slate-300">
                     <Globe size={14} /> Google
@@ -169,9 +211,13 @@ const App: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             <p className="text-center mt-6 text-xs font-medium text-gray-500 dark:text-slate-400">
-              Hesabınız yok mu? <button className="text-blue-600 dark:text-blue-400 font-bold hover:underline">Kaydolun</button>
+              {authView === 'login' ? (
+                <>Hesabınız yok mu? <button onClick={() => setAuthView('register')} className="text-blue-600 dark:text-blue-400 font-bold hover:underline">Kaydolun</button></>
+              ) : (
+                <>Zaten üye misiniz? <button onClick={() => setAuthView('login')} className="text-blue-600 dark:text-blue-400 font-bold hover:underline">Giriş Yapın</button></>
+              )}
             </p>
           </div>
         </div>
@@ -196,9 +242,8 @@ const App: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => { updateState('projectType', item.id as ProjectType); nextStep(); }}
-                  className={`p-6 rounded-2xl border-2 transition-all duration-300 text-left hover:shadow-lg active:scale-[0.98] ${
-                    state.projectType === item.id ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-900/20 ring-2 ring-blue-100 dark:ring-blue-900/40' : 'border-gray-50 dark:border-slate-800 bg-white dark:bg-slate-800/50'
-                  }`}
+                  className={`p-6 rounded-2xl border-2 transition-all duration-300 text-left hover:shadow-lg active:scale-[0.98] ${state.projectType === item.id ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-900/20 ring-2 ring-blue-100 dark:ring-blue-900/40' : 'border-gray-50 dark:border-slate-800 bg-white dark:bg-slate-800/50'
+                    }`}
                 >
                   <div className="mb-4">{item.icon}</div>
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">{item.title}</h3>
@@ -216,7 +261,7 @@ const App: React.FC = () => {
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{state.projectType === 'Residential' ? 'Konut' : 'Ofis'} Detayları</h2>
               <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Alanınızın büyüklüğünü ve durumunu belirtin.</p>
             </div>
-            
+
             <div className="space-y-4">
               <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1">Oda Sayısı</label>
               <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
@@ -224,9 +269,8 @@ const App: React.FC = () => {
                   <button
                     key={count}
                     onClick={() => updateState('roomCount', count as RoomCount)}
-                    className={`py-3 px-2 rounded-xl border font-bold transition-all text-sm active:scale-95 ${
-                      state.roomCount === count ? 'border-blue-600 bg-blue-600 text-white shadow-md' : 'border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-800/50 text-gray-600 dark:text-slate-300 hover:border-blue-300 dark:hover:border-blue-800'
-                    }`}
+                    className={`py-3 px-2 rounded-xl border font-bold transition-all text-sm active:scale-95 ${state.roomCount === count ? 'border-blue-600 bg-blue-600 text-white shadow-md' : 'border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-800/50 text-gray-600 dark:text-slate-300 hover:border-blue-300 dark:hover:border-blue-800'
+                      }`}
                   >
                     {count}
                   </button>
@@ -244,9 +288,8 @@ const App: React.FC = () => {
                   <button
                     key={item.id}
                     onClick={() => updateState('furnishingStatus', item.id as FurnishingStatus)}
-                    className={`flex-1 p-4 rounded-xl border-2 transition-all text-left active:scale-[0.98] ${
-                      state.furnishingStatus === item.id ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-50 dark:border-slate-800 bg-white dark:bg-slate-800/50'
-                    }`}
+                    className={`flex-1 p-4 rounded-xl border-2 transition-all text-left active:scale-[0.98] ${state.furnishingStatus === item.id ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-50 dark:border-slate-800 bg-white dark:bg-slate-800/50'
+                      }`}
                   >
                     <span className="block font-bold text-gray-900 dark:text-white text-sm">{item.label}</span>
                     <span className="text-[10px] text-gray-500 dark:text-slate-400 uppercase font-medium">{item.desc}</span>
@@ -277,17 +320,15 @@ const App: React.FC = () => {
             <div className="flex p-1 bg-gray-50 dark:bg-slate-800 rounded-xl w-full max-w-xs mx-auto">
               <button
                 onClick={() => updateState('scope', 'Whole')}
-                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
-                  state.scope === 'Whole' ? 'bg-white dark:bg-slate-700 shadow text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700'
-                }`}
+                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${state.scope === 'Whole' ? 'bg-white dark:bg-slate-700 shadow text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700'
+                  }`}
               >
                 Tüm Alan
               </button>
               <button
                 onClick={() => updateState('scope', 'Regional')}
-                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
-                  state.scope === 'Regional' ? 'bg-white dark:bg-slate-700 shadow text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700'
-                }`}
+                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${state.scope === 'Regional' ? 'bg-white dark:bg-slate-700 shadow text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700'
+                  }`}
               >
                 Bölgesel
               </button>
@@ -368,9 +409,8 @@ const App: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => updateState('paintQuality', item.id as PaintQuality)}
-                  className={`relative p-5 rounded-2xl border-2 transition-all text-left flex flex-col active:scale-[1.01] ${
-                    state.paintQuality === item.id ? 'border-blue-600 bg-white dark:bg-slate-800 ring-2 ring-blue-50 dark:ring-blue-900/30 shadow-md scale-[1.02]' : 'border-gray-50 dark:border-slate-800 bg-white dark:bg-slate-800/40 opacity-80 hover:opacity-100'
-                  }`}
+                  className={`relative p-5 rounded-2xl border-2 transition-all text-left flex flex-col active:scale-[1.01] ${state.paintQuality === item.id ? 'border-blue-600 bg-white dark:bg-slate-800 ring-2 ring-blue-50 dark:ring-blue-900/30 shadow-md scale-[1.02]' : 'border-gray-50 dark:border-slate-800 bg-white dark:bg-slate-800/40 opacity-80 hover:opacity-100'
+                    }`}
                 >
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-0.5">{item.title}</h3>
                   <p className="text-[10px] font-bold text-blue-500 dark:text-blue-400 uppercase tracking-widest mb-3">{item.desc}</p>
@@ -431,7 +471,7 @@ const App: React.FC = () => {
                       <span className="text-sm font-semibold text-gray-700 dark:text-slate-200">{state.paintQuality}</span>
                     </div>
                   </div>
-                  
+
                   <div className="pt-4 border-t border-gray-50 dark:border-slate-700">
                     <span className="text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest block mb-2">Kapsam</span>
                     {state.scope === 'Whole' ? (
@@ -499,7 +539,7 @@ const App: React.FC = () => {
         <ThemeToggle />
 
         <div className="max-w-4xl mx-auto">
-          <header className="flex flex-col items-center mb-6">
+          <header className="flex flex-col items-center" style={{marginBottom:"50px"}}>
             <div className="flex items-center gap-2 mb-1">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-md">
                 <Paintbrush size={18} />
@@ -509,12 +549,13 @@ const App: React.FC = () => {
             <p className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Boya Teklif Sistemi</p>
           </header>
 
+
           <Stepper currentStep={state.step} onStepClick={goToStep} />
 
           <main className={`${commonCardClass} rounded-[2rem] p-6 md:p-8 mt-4 relative overflow-hidden`}>
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-400/5 dark:bg-blue-400/10 blur-[80px] rounded-full" />
             <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-indigo-400/5 dark:bg-indigo-400/10 blur-[80px] rounded-full" />
-            
+
             <div className="relative z-10">
               {renderStep()}
             </div>
@@ -528,6 +569,8 @@ const App: React.FC = () => {
             </div>
             <p>© 2024 ProTeklif platformu</p>
           </footer>
+
+
         </div>
       </div>
     </div>
