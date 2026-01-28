@@ -9,7 +9,6 @@ export enum AppStep {
 export type ProjectType = 'Residential' | 'Commercial';
 export type RoomCount = '1+0' | '1+1' | '2+1' | '3+1' | '4+1' | '5+1+';
 export type FurnishingStatus = 'Empty' | 'Furnished';
-export type PaintQuality = 'Economic' | 'Standard' | 'Premium';
 export type ScopeType = 'Whole' | 'Regional';
 
 export interface Room {
@@ -19,6 +18,7 @@ export interface Room {
   ceiling: boolean;
 }
 
+
 export interface AppState {
   step: AppStep;
   projectType: ProjectType;
@@ -26,5 +26,6 @@ export interface AppState {
   furnishingStatus: FurnishingStatus;
   scope: ScopeType;
   selectedRooms: Room[];
-  paintQuality: PaintQuality;
+  // DEĞİŞİKLİK: Tekil 'selectedPaintId' yerine çoğul dizi
+  selectedPaintIds: string[]; 
 }

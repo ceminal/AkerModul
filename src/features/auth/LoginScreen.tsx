@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, Paintbrush, ArrowRight, Globe } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Globe, User } from 'lucide-react';
+import logoDarkImg from '../../assets/akerlogosiyah.png'
+import logoLightImg from '../../assets/akerlogobeyaz.png'
+
+
 
 interface Props {
     onLoginSuccess: () => void;
@@ -25,10 +29,23 @@ export const LoginScreen: React.FC<Props> = ({ onLoginSuccess }) => {
         <div className="w-full max-w-sm animate-in fade-in zoom-in duration-700 mx-auto">
             {/* Logo */}
             <div className="text-center mb-6">
-                <div className="inline-flex w-12 h-12 bg-blue-600 rounded-xl items-center justify-center text-white shadow-lg shadow-blue-200 dark:shadow-blue-900/20 mb-3 rotate-3">
+                {/* <div className="inline-flex w-12 h-12 bg-blue-600 rounded-xl items-center justify-center text-white shadow-lg shadow-blue-200 dark:shadow-blue-900/20 mb-3 rotate-3">
                     <Paintbrush size={24} />
+                </div> */}
+                <div className="flex justify-center mb-4 relative h-20">
+                    <img
+                        src={logoDarkImg}
+                        alt="ProTeklif Logo"
+                        className="h-full w-auto object-contain block dark:hidden drop-shadow-xl transition-opacity duration-300"
+                    />
+
+                    <img
+                        src={logoLightImg}
+                        alt="ProTeklif Logo"
+                        className="h-full w-auto object-contain hidden dark:block drop-shadow-xl transition-opacity duration-300 absolute inset-0 mx-auto"
+                    />
                 </div>
-                <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">ProTeklif</h1>
+                {/* <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">AKER GROUP</h1> */}
                 <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 mt-1 uppercase tracking-widest">Giriş Yap</p>
             </div>
 
@@ -39,8 +56,8 @@ export const LoginScreen: React.FC<Props> = ({ onLoginSuccess }) => {
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1">E-Posta</label>
                         <div className="relative group">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-600 group-focus-within:text-blue-500 transition-colors" size={16} />
-                            <input required type="email" placeholder="ornek@mail.com" className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 outline-none transition-all font-medium text-sm dark:text-white" />
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-600 group-focus-within:text-blue-500 transition-colors" size={16} />
+                            <input required type="text" placeholder="Kullanıcı adı" className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 outline-none transition-all font-medium text-sm dark:text-white" />
                         </div>
                     </div>
 

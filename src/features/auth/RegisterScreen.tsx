@@ -60,10 +60,10 @@ export const RegisterScreen: React.FC<Props> = ({ onRegisterSuccess }) => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Ad Soyad */}
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1">Ad Soyad</label>
+                        <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1">Kullanıcı Adı</label>
                         <div className="relative group">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-600 group-focus-within:text-blue-500 transition-colors" size={16} />
-                            <input required type="text" placeholder="Adınız Soyadınız" className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 outline-none transition-all font-medium text-sm dark:text-white" />
+                            <input required type="text" placeholder="Kullanıcı adı" className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 outline-none transition-all font-medium text-sm dark:text-white" />
                         </div>
                     </div>
 
