@@ -25,23 +25,18 @@ export const LoginScreen: React.FC<Props> = ({ onLoginSuccess }) => {
         setLoading(true);
         console.log(userLoginData);
         try {
-            // lib/axios.ts dosyanı kullanıyorsan başına http... yazmana gerek kalmaz
             const response = await axios.post('Users/login', userLoginData);
 
-            // API'den gelen token ismine dikkat et (accessToken mı yoksa token mı?)
             const token = response.data.token || response.data.accessToken;
 
             if (token) {
                 localStorage.setItem('token', token);
 
-                // --- KRİTİK NOKTA ---
-                onLoginSuccess(); // Üst component'teki isLoggedIn state'ini true yapar
+                onLoginSuccess();
 
                 console.log('Giriş başarılı');
                 setLoading(false);
-
-                // Hangi sayfaya yönlendirmek istiyorsan:
-                navigate('/dashboard');
+                navigate('/admin/dashboard');
             }
         }
         catch (error) {
