@@ -1,9 +1,6 @@
 import axios from 'axios';
-import.meta.env.VITE_ROOT_URL;
 
 axios.defaults.baseURL = import.meta.env.VITE_ROOT_URL;
-
-axios.defaults.timeout = 10000;
 
 axios.interceptors.request.use(
     (config) => {
@@ -19,11 +16,17 @@ axios.interceptors.request.use(
 );
 
 axios.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        return response;
+    },
     (error) => {
         if (error.response && error.response.status === 401) {
+            console.warn('Oturum süresi doldu, çıkış yapılıyor...');
             localStorage.removeItem('token');
-            window.location.href = '/login';
+
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/';
+            }
         }
         return Promise.reject(error);
     }
