@@ -18,6 +18,10 @@ export interface Room {
   ceiling: boolean;
 }
 
+export interface SelectedPaint {
+  id: string;
+  quantity: number;
+}
 
 export interface AppState {
   step: AppStep;
@@ -26,6 +30,6 @@ export interface AppState {
   furnishingStatus: FurnishingStatus;
   scope: ScopeType;
   selectedRooms: Room[];
-  // DEĞİŞİKLİK: Tekil 'selectedPaintId' yerine çoğul dizi
-  selectedPaintIds: string[]; 
+  // DEĞİŞİKLİK: ID dizisi yerine obje dizisi
+  selectedPaints: SelectedPaint[];
 }

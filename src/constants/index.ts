@@ -32,12 +32,6 @@ export const PAINT_PRODUCTS = [
   { id: 'mar-003', brand: 'Marshall', name: 'Antibakteriyel', pricePerLiter: 310, features: ['Hijyenik', 'Kokusuz'], colorCode: 'bg-orange-500' },
   { id: 'mar-004', brand: 'Marshall', name: 'Fit İç Cephe', pricePerLiter: 220, features: ['Ekonomik', 'Mat'], colorCode: 'bg-orange-500' },
 
-  // FİLLİ BOYA GRUBU
-  { id: 'fil-001', brand: 'Filli Boya', name: 'Momento Silan', pricePerLiter: 350, features: ['Yıkanabilir', 'İpeksi Mat'], colorCode: 'bg-cyan-600' },
-  { id: 'fil-002', brand: 'Filli Boya', name: 'Momento Max', pricePerLiter: 330, features: ['Mat', 'Soft Doku'], colorCode: 'bg-cyan-600' },
-  { id: 'fil-003', brand: 'Filli Boya', name: 'Alpina Teknos', pricePerLiter: 290, features: ['Dönüşüm Astarı', 'Silikonlu'], colorCode: 'bg-cyan-600' },
-  { id: 'fil-004', brand: 'Filli Boya', name: 'Aqusto Silan', pricePerLiter: 360, features: ['Su Bazlı', 'Yarı Mat'], colorCode: 'bg-cyan-600' },
-
   // JOTUN GRUBU
   { id: 'jot-001', brand: 'Jotun', name: 'Fenomastic Güzel Evim', pricePerLiter: 680, features: ['Zengin Renk', 'Mat'], colorCode: 'bg-blue-900' },
   { id: 'jot-002', brand: 'Jotun', name: 'Fenomastic Zen', pricePerLiter: 720, features: ['Mat Doku', 'Silinebilir'], colorCode: 'bg-blue-900' },

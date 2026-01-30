@@ -1,10 +1,11 @@
-import React, { useState } from 'react'; // useState eklendi
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'; // useState eklendi
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 // Menu ve X ikonlarını ekledik
 import { LayoutDashboard, Users, Package, LogOut, Paintbrush, FilePlus, Bell, Search, Menu, X } from 'lucide-react';
 import { ThemeToggle } from '../components/ThemeToggle';
 import logoDarkImg from '../assets/akerlogosiyah.png'
 import logoLightImg from '../assets/akerlogobeyaz.png'
+
 
 interface Props {
   isDarkMode: boolean;
@@ -12,10 +13,22 @@ interface Props {
   onLogout: () => void;
 }
 
+
 export const AdminLayout: React.FC<Props> = ({ isDarkMode, toggleDarkMode, onLogout }) => {
+  const navigate = useNavigate();
   const location = useLocation();
   // Mobil menü durumu için state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+
+    // Eğer token yoksa, kullanıcıyı anında ana sayfaya (veya login'e) at
+    if (!token) {
+      console.warn("Yetkisiz erişim: Token bulunamadı, yönlendiriliyor...");
+      navigate('/', { replace: true });
+    }
+  }, [navigate]);
 
   const menuItems = [
     { path: '/admin/dashboard', label: 'Özet', icon: LayoutDashboard },

@@ -1,29 +1,66 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Globe, User } from 'lucide-react';
+import { Lock, Eye, EyeOff, ArrowRight, User } from 'lucide-react';
 import logoDarkImg from '../../assets/akerlogosiyah.png'
 import logoLightImg from '../../assets/akerlogobeyaz.png'
-
-
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
     onLoginSuccess: () => void;
 }
 
 export const LoginScreen: React.FC<Props> = ({ onLoginSuccess }) => {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [userLoginData, setUserLoginData] = useState({
+        userName: '',
+        password: ''
+    });
 
     const commonCardClass = `bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-white dark:border-slate-800 transition-all duration-500 shadow-xl`;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        setTimeout(() => {
-            onLoginSuccess();
+        console.log(userLoginData);
+        try {
+            // lib/axios.ts dosyanı kullanıyorsan başına http... yazmana gerek kalmaz
+            const response = await axios.post('Users/login', userLoginData);
+
+            // API'den gelen token ismine dikkat et (accessToken mı yoksa token mı?)
+            const token = response.data.token || response.data.accessToken;
+
+            if (token) {
+                localStorage.setItem('token', token);
+
+                // --- KRİTİK NOKTA ---
+                onLoginSuccess(); // Üst component'teki isLoggedIn state'ini true yapar
+
+                console.log('Giriş başarılı');
+                setLoading(false);
+
+                // Hangi sayfaya yönlendirmek istiyorsan:
+                navigate('/dashboard');
+            }
+        }
+        catch (error) {
+            console.error("Giriş hatası");
             setLoading(false);
-        }, 1200);
+        }
+        // setTimeout(() => {
+        //     onLoginSuccess();
+        //     setLoading(false);
+        // }, 1200);
     };
+
+    const handleOnChange = (e: React.FormEvent) => {
+        const { name, value } = e.target;
+        setUserLoginData((prevData) => ({
+            ...prevData,
+            [name]: value
+        }));
+    }
 
     return (
         <div className="w-full max-w-sm animate-in fade-in zoom-in duration-700 mx-auto">
@@ -54,10 +91,10 @@ export const LoginScreen: React.FC<Props> = ({ onLoginSuccess }) => {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1">E-Posta</label>
+                        <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1">Kullanıcı Adı</label>
                         <div className="relative group">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-600 group-focus-within:text-blue-500 transition-colors" size={16} />
-                            <input required type="text" placeholder="Kullanıcı adı" className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 outline-none transition-all font-medium text-sm dark:text-white" />
+                            <input name="userName" onChange={handleOnChange} required type="text" placeholder="Kullanıcı adı" className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 outline-none transition-all font-medium text-sm dark:text-white" />
                         </div>
                     </div>
 
@@ -68,7 +105,7 @@ export const LoginScreen: React.FC<Props> = ({ onLoginSuccess }) => {
                         </div>
                         <div className="relative group">
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-600 group-focus-within:text-blue-500 transition-colors" size={16} />
-                            <input required type={showPassword ? "text" : "password"} placeholder="••••••••" className="w-full pl-10 pr-10 py-2.5 bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 outline-none transition-all font-medium text-sm dark:text-white" />
+                            <input name="password" onChange={handleOnChange} required type={showPassword ? "text" : "password"} placeholder="••••••••" className="w-full pl-10 pr-10 py-2.5 bg-gray-50/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 outline-none transition-all font-medium text-sm dark:text-white" />
                             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-600 hover:text-gray-600 dark:hover:text-slate-300 transition-colors">
                                 {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
                             </button>
@@ -85,7 +122,7 @@ export const LoginScreen: React.FC<Props> = ({ onLoginSuccess }) => {
                     </button>
                 </form>
 
-                <div className="mt-6">
+                {/* <div className="mt-6">
                     <div className="relative flex items-center justify-center mb-4">
                         <div className="absolute w-full h-px bg-gray-100 dark:bg-slate-800"></div>
                         <span className="relative px-3 bg-white dark:bg-slate-900 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Veya</span>
@@ -94,12 +131,12 @@ export const LoginScreen: React.FC<Props> = ({ onLoginSuccess }) => {
                         <button className="flex items-center justify-center gap-2 py-2 border border-gray-100 dark:border-slate-800 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors text-[11px] font-bold text-gray-600 dark:text-slate-300"><Globe size={14} /> Google</button>
                         <button className="flex items-center justify-center gap-2 py-2 border border-gray-100 dark:border-slate-800 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors text-[11px] font-bold text-gray-600 dark:text-slate-300">Apple</button>
                     </div>
-                </div>
+                </div> */}
             </div>
 
-            <p className="text-center mt-6 text-xs font-medium text-gray-500 dark:text-slate-400">
+            {/* <p className="text-center mt-6 text-xs font-medium text-gray-500 dark:text-slate-400">
                 Hesabınız yok mu? <Link to="/kayit" className="text-blue-600 dark:text-blue-400 font-bold hover:underline">Kaydolun</Link>
-            </p>
+            </p> */}
         </div>
     );
 };

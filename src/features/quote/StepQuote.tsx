@@ -13,8 +13,7 @@ interface Props {
 
 export const StepQuote: React.FC<Props> = ({ state, totalPrice, onEdit }) => {
   const selectedPaint = PAINT_PRODUCTS.find(p => p.id === state.selectedPaintId);
-  const dateStr = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
-  const selectedPaints = PAINT_PRODUCTS.filter(p => state.selectedPaintIds.includes(p.id));
+  const dateStr = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'numeric', year: 'numeric' });
   return (
     <div className="animate-in zoom-in-95 duration-500">
 
@@ -32,9 +31,9 @@ export const StepQuote: React.FC<Props> = ({ state, totalPrice, onEdit }) => {
       <div className="bg-white text-gray-800 p-8 md:p-12 rounded-xl shadow-2xl relative overflow-hidden max-w-2xl mx-auto border border-gray-200">
 
         {/* Filigran (Opsiyonel) */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[120px] font-black text-gray-100 -rotate-45 pointer-events-none select-none uppercase">
+        {/* <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[120px] font-black text-gray-100 -rotate-45 pointer-events-none select-none uppercase">
           TASLAK
-        </div>
+        </div> */}
 
         {/* Header: Logo ve Tarih */}
         <div className="flex justify-between items-start border-b-2 border-gray-100 pb-8 mb-8">
@@ -98,14 +97,20 @@ export const StepQuote: React.FC<Props> = ({ state, totalPrice, onEdit }) => {
                 <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-blue-600" /></td>
               </tr>
               <tr className="bg-blue-50/50">
-                <td className="px-4 py-3 font-bold text-blue-700 align-top">Seçilen Boyalar</td>
+                <td className="px-4 py-3 font-bold text-blue-700 align-top">Seçilen Ürünler</td>
                 <td className="px-4 py-3 font-bold text-blue-700">
-                  <ul className="list-disc list-inside">
-                    {selectedPaints.map(paint => (
-                      <li key={paint.id}>
-                        {paint.brand} - {paint.name} (₺{paint.pricePerLiter}/Lt)
-                      </li>
-                    ))}
+                  <ul className="space-y-1">
+                    {state.selectedPaints.map(item => {
+                      const product = PAINT_PRODUCTS.find(p => p.id === item.id);
+                      if (!product) return null;
+                      return (
+                        <li key={item.id} className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-blue-400 rounded-full inline-block" />
+                          {product.brand} - {product.name}
+                          <span className="text-xs bg-blue-100 text-blue-700 px-1.5 rounded ml-1 font-normal">x{item.quantity}</span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </td>
                 <td className="px-4 py-3 text-right align-top"><CheckCircle2 size={14} className="inline text-blue-600" /></td>

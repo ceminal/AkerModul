@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// Lock ve ShieldCheck ikonlarını ekledik
 import { Plus, User, Mail, Shield, Trash2, Edit2, Lock, ShieldCheck } from 'lucide-react';
 import { Modal } from '../../components/Modal';
 
@@ -18,6 +17,9 @@ export const UsersPage: React.FC = () => {
     ]);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    // Düzenlenen kullanıcının ID'sini tutar (Null ise "Yeni Ekleme" modudur)
+    const [editingId, setEditingId] = useState<number | null>(null);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -29,10 +31,53 @@ export const UsersPage: React.FC = () => {
 
     const [error, setError] = useState<string | null>(null);
 
-    const handleAddUser = (e: React.FormEvent) => {
+    // Formu ve state'leri sıfırlayan yardımcı fonksiyon
+    const resetForm = () => {
+        setFormData({ name: '', email: '', role: 'Müşteri', password: '', confirmPassword: '' });
+        setError(null);
+        setEditingId(null);
+    };
+
+    // "Kullanıcı Ekle" butonuna basınca
+    const openAddModal = () => {
+        resetForm();
+        setIsModalOpen(true);
+    };
+
+    // "Düzenle" butonuna basınca
+    const handleEditClick = (user: UserData) => {
+        setError(null);
+        setEditingId(user.id); // Düzenleme modunu aç
+        setFormData({
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            password: '',       // Şifreleri boş bırakıyoruz (düzenlemede gözükmeyecek)
+            confirmPassword: ''
+        });
+        setIsModalOpen(true);
+    };
+
+    // Form Gönderildiğinde (Hem Ekleme Hem Güncelleme)
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
 
+        // --- GÜNCELLEME İŞLEMİ ---
+        if (editingId) {
+            setUsers(users.map(user => 
+                user.id === editingId 
+                    ? { ...user, name: formData.name, email: formData.email, role: formData.role }
+                    : user
+            ));
+            setIsModalOpen(false);
+            resetForm();
+            return;
+        }
+
+        // --- YENİ EKLEME İŞLEMİ ---
+        
+        // Sadece yeni eklerken şifre kontrolü yap
         if (formData.password !== formData.confirmPassword) {
             setError('Şifreler birbiriyle uyuşmuyor!');
             return;
@@ -52,9 +97,8 @@ export const UsersPage: React.FC = () => {
         };
 
         setUsers([...users, newUser]);
-
-        setFormData({ name: '', email: '', role: 'Admin', password: '', confirmPassword: '' });
         setIsModalOpen(false);
+        resetForm();
     };
 
     const handleDelete = (id: number) => {
@@ -66,14 +110,13 @@ export const UsersPage: React.FC = () => {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-            {/* --- BAŞLIK VE LİSTELEME KISMI (AYNI) --- */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Kullanıcılar</h1>
                     <p className="text-sm text-gray-500 dark:text-slate-400 font-medium">Yönetici ve müşteri listesi</p>
                 </div>
                 <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={openAddModal} // openAddModal fonksiyonunu bağladık
                     className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-500/30 flex items-center gap-2 transition-all active:scale-95 text-sm"
                 >
                     <Plus size={18} /> Kullanıcı Ekle
@@ -99,7 +142,10 @@ export const UsersPage: React.FC = () => {
                         </div>
 
                         <div className="mt-4 pt-4 border-t border-gray-50 dark:border-slate-800 flex gap-2">
-                            <button className="flex-1 py-2 bg-gray-50 dark:bg-slate-800 rounded-lg text-xs font-bold text-gray-600 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center justify-center gap-1">
+                            <button 
+                                onClick={() => handleEditClick(user)} // Düzenle fonksiyonunu bağladık
+                                className="flex-1 py-2 bg-gray-50 dark:bg-slate-800 rounded-lg text-xs font-bold text-gray-600 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center justify-center gap-1"
+                            >
                                 <Edit2 size={14} /> Düzenle
                             </button>
                             <button onClick={() => handleDelete(user.id)} className="flex-1 py-2 bg-gray-50 dark:bg-slate-800 rounded-lg text-xs font-bold text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center gap-1">
@@ -110,19 +156,18 @@ export const UsersPage: React.FC = () => {
                 ))}
             </div>
 
-
-            {/* --- GÜNCELLENMİŞ MODAL --- */}
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Yeni Kullanıcı Ekle">
-
-                {/* Hata Mesajı Gösterimi */}
+            <Modal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                title={editingId ? "Kullanıcıyı Düzenle" : "Yeni Kullanıcı Ekle"} // Başlık dinamik oldu
+            >
                 {error && (
                     <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-xs font-bold animate-in slide-in-from-top-2">
                         {error}
                     </div>
                 )}
 
-                <form onSubmit={handleAddUser} className="space-y-4">
-
+                <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Ad Soyad */}
                     <div className="space-y-1.5">
                         <label className="text-xs font-bold text-gray-500 dark:text-slate-400">Ad Soyad</label>
@@ -167,54 +212,55 @@ export const UsersPage: React.FC = () => {
                             >
                                 <option value="Admin">Admin</option>
                                 <option value="Editör">Editör</option>
+                                <option value="Müşteri">Müşteri</option>
                             </select>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 pt-2">
-                        {/* Şifre */}
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-gray-500 dark:text-slate-400">Şifre</label>
-                            <div className="relative group">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={16} />
-                                <input
-                                    required
-                                    type="password"
-                                    placeholder="******"
-                                    value={formData.password}
-                                    onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:text-white text-sm"
-                                />
+                    {/* Şifre Alanları - Sadece Ekleme Modunda (!editingId) görünür */}
+                    {!editingId && (
+                        <div className="grid grid-cols-2 gap-4 pt-2 animate-in fade-in slide-in-from-top-2">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-gray-500 dark:text-slate-400">Şifre</label>
+                                <div className="relative group">
+                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={16} />
+                                    <input
+                                        required={!editingId} // Düzenlerken zorunlu değil
+                                        type="password"
+                                        placeholder="******"
+                                        value={formData.password}
+                                        onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:text-white text-sm"
+                                    />
+                                </div>
                             </div>
-                        </div>
 
-                        {/* Şifre Tekrar */}
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-gray-500 dark:text-slate-400">Şifre Tekrar</label>
-                            <div className="relative group">
-                                <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={16} />
-                                <input
-                                    required
-                                    type="password"
-                                    placeholder="******"
-                                    value={formData.confirmPassword}
-                                    onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                    className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-slate-800 border rounded-xl focus:ring-2 outline-none dark:text-white text-sm transition-colors
-                    ${error ? 'border-red-300 focus:border-red-500 focus:ring-red-100' : 'border-gray-200 dark:border-slate-700 focus:ring-blue-500'}
-                  `}
-                                />
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-gray-500 dark:text-slate-400">Şifre Tekrar</label>
+                                <div className="relative group">
+                                    <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={16} />
+                                    <input
+                                        required={!editingId}
+                                        type="password"
+                                        placeholder="******"
+                                        value={formData.confirmPassword}
+                                        onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                        className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-slate-800 border rounded-xl focus:ring-2 outline-none dark:text-white text-sm transition-colors
+                                            ${error ? 'border-red-300 focus:border-red-500 focus:ring-red-100' : 'border-gray-200 dark:border-slate-700 focus:ring-blue-500'}
+                                        `}
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
                     <div className="pt-4">
                         <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-md transition-all active:scale-[0.98]">
-                            Kullanıcıyı Oluştur
+                            {editingId ? "Değişiklikleri Kaydet" : "Kullanıcıyı Oluştur"}
                         </button>
                     </div>
                 </form>
             </Modal>
-
         </div>
     );
 };

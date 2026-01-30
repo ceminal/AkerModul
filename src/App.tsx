@@ -12,7 +12,8 @@ import { ProductsPage } from './features/admin/ProductsPage';
 
 
 const App: React.FC = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // App.tsx içinde
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(!!localStorage.getItem('token'));
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const navigate = useNavigate();
@@ -21,6 +22,12 @@ const App: React.FC = () => {
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
     navigate('/admin/dashboard');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    navigate('/');
   };
 
   return (
@@ -48,7 +55,7 @@ const App: React.FC = () => {
               <AdminLayout
                 isDarkMode={isDarkMode}
                 toggleDarkMode={toggleDarkMode}
-                onLogout={() => { setIsLoggedIn(false); navigate('/'); }}
+                onLogout={handleLogout}
               />
             ) : (
               <Navigate to="/" replace />

@@ -26,8 +26,8 @@ export const QuoteWizard: React.FC = () => {
             case AppStep.PAINT_SELECTION:
                 return (
                     <StepPaintSelection
-                        selectedPaintIds={state.selectedPaintIds}
-                        onSelect={(val) => updateState('selectedPaintIds', val)}
+                        selectedPaints={state.selectedPaints} 
+                        onSelect={(val) => updateState('selectedPaints', val)}
                         onNext={nextStep}
                         onPrev={prevStep}
                     />

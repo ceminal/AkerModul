@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AppState, AppStep } from '../types';
+import { AppState, AppStep, SelectedPaint } from '../types';
 import { INITIAL_ROOMS, PAINT_PRODUCTS, PRICING_PARAMS } from '../constants';
 
 export const useQuote = () => {
@@ -10,7 +10,7 @@ export const useQuote = () => {
     furnishingStatus: 'Empty',
     scope: 'Whole',
     selectedRooms: INITIAL_ROOMS.map(r => ({ ...r })),
-    selectedPaintIds: [], // Başlangıçta boş dizi
+    selectedPaints: [], // Yeni yapı: { id: '...', quantity: 1 }
   });
 
   const nextStep = () => setState(prev => ({ ...prev, step: Math.min(prev.step + 1, AppStep.QUOTE) }));
@@ -22,18 +22,31 @@ export const useQuote = () => {
   };
 
   const calculatePrice = () => {
-    // 1. Seçilen Boyaları Bul
-    const selectedPaints = PAINT_PRODUCTS.filter(p => state.selectedPaintIds.includes(p.id));
-    
-    // Eğer hiç boya seçilmediyse varsayılan bir fiyat al (Hata vermemesi için)
-    const averagePricePerLiter = selectedPaints.length > 0
-      ? selectedPaints.reduce((acc, curr) => acc + curr.pricePerLiter, 0) / selectedPaints.length
-      : 250; // Varsayılan ortalama
+    // 1. Seçilen Boyaların Fiyatlarını ve Miktarlarını Bul
+    let totalPaintPrice = 0;
+    let totalQuantity = 0;
+
+    if (state.selectedPaints.length === 0) {
+      // Hiçbiri seçilmediyse varsayılan
+      totalPaintPrice = 250; 
+      totalQuantity = 1;
+    } else {
+      state.selectedPaints.forEach(item => {
+        const product = PAINT_PRODUCTS.find(p => p.id === item.id);
+        if (product) {
+          totalPaintPrice += product.pricePerLiter * item.quantity;
+          totalQuantity += item.quantity;
+        }
+      });
+    }
+
+    // Ağırlıklı Ortalama Litre Fiyatı
+    const averagePricePerLiter = totalPaintPrice / totalQuantity;
 
     // 2. Alan Hesabı
     const totalWallArea = PRICING_PARAMS.roomSizes[state.roomCount];
     
-    // 3. Malzeme Maliyeti (Ortalama litre fiyatına göre)
+    // 3. Malzeme Maliyeti
     const materialCost = totalWallArea * PRICING_PARAMS.paintConsumption * averagePricePerLiter;
 
     // 4. İşçilik
