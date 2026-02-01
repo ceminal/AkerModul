@@ -1,20 +1,29 @@
 import { useState } from 'react';
-import { AppState, AppStep, SelectedPaint } from '../types';
+import { AppState, AppStep, ProjectType, SelectedPaint } from '../types';
 import { INITIAL_ROOMS, PAINT_PRODUCTS, PRICING_PARAMS } from '../constants';
 
 export const useQuote = () => {
   const [state, setState] = useState<AppState>({
-    step: AppStep.PROJECT_TYPE,
-    projectType: 'Residential',
+    step: AppStep.CUSTOMER_INFO,
+    customer: {
+      name: '',
+      surname: '',
+      companyName: ''
+    },
+    projectType: null as unknown as ProjectType,
+    mainCategory: null,
+    subCategory: [],
     roomCount: '2+1',
     furnishingStatus: 'Empty',
     scope: 'Whole',
     selectedRooms: INITIAL_ROOMS.map(r => ({ ...r })),
-    selectedPaints: [], // Yeni yapı: { id: '...', quantity: 1 }
+    selectedPaints: [],
+    projectDetails: [],
+    squareMeter: null,
   });
 
   const nextStep = () => setState(prev => ({ ...prev, step: Math.min(prev.step + 1, AppStep.QUOTE) }));
-  const prevStep = () => setState(prev => ({ ...prev, step: Math.max(prev.step - 1, AppStep.PROJECT_TYPE) }));
+  const prevStep = () => setState(prev => ({ ...prev, step: Math.max(prev.step - 1, AppStep.CUSTOMER_INFO) }));
   const goToStep = (step: AppStep) => setState(prev => ({ ...prev, step }));
 
   const updateState = <K extends keyof AppState>(key: K, value: AppState[K]) => {

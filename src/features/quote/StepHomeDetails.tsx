@@ -1,6 +1,6 @@
 import React from 'react';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
-import { AppState, RoomCount, FurnishingStatus } from '../../types';
+import { ChevronRight, ChevronLeft, Ruler } from 'lucide-react';
+import { AppState, RoomCount, FurnishingStatus, SquareMeterRange } from '../../types';
 
 interface Props {
   state: AppState;
@@ -10,15 +10,28 @@ interface Props {
 }
 
 export const StepHomeDetails: React.FC<Props> = ({ state, updateState, onNext, onPrev }) => {
+  const isResidential = state.projectType === 'Residential';
+
+  const squareMeterOptions: SquareMeterRange[] = [
+    '0-50 m²', '50-100 m²', '100-200 m²', 
+    '200-500 m²', '500-1000 m²', '1000+ m²'
+  ];
+
+  const isNextDisabled = !isResidential && !state.squareMeter;
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {state.projectType === 'Residential' ? 'Konut' : 'Ofis'} Detayları
+          {state.projectType === 'Residential' ? 'Konut' : 
+           state.projectType === 'Commercial' ? 'Ofis' :
+           state.projectType === 'Industrial' ? 'Fabrika' : 'İnşaat'} Detayları
         </h2>
         <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Alanınızın büyüklüğünü ve durumunu belirtin.</p>
       </div>
 
+      {isResidential ? (
+        <>
       <div className="space-y-4">
         <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1">Oda Sayısı</label>
         <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
@@ -60,12 +73,39 @@ export const StepHomeDetails: React.FC<Props> = ({ state, updateState, onNext, o
           ))}
         </div>
       </div>
+        </>
+      ) : (
+        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
+          <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-2">
+            <Ruler size={14} /> Toplam Alan (m²)
+          </label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {squareMeterOptions.map(range => (
+              <button
+                key={range}
+                onClick={() => updateState('squareMeter', range)}
+                className={`p-4 rounded-xl border-2 transition-all font-bold text-sm active:scale-[0.98] ${
+                  state.squareMeter === range
+                    ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-md'
+                    : 'border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-800/50 text-gray-600 dark:text-slate-300 hover:border-blue-300 dark:hover:border-blue-700'
+                }`}
+              >
+                {range}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-between items-center pt-2">
         <button onClick={onPrev} className="flex items-center gap-1.5 text-gray-400 dark:text-slate-500 font-bold hover:text-gray-700 dark:hover:text-slate-300 text-sm">
           <ChevronLeft size={18} /> Geri
         </button>
-        <button onClick={onNext} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow-md hover:bg-blue-700 flex items-center gap-1.5 text-sm transition-all active:scale-95">
+        <button 
+          onClick={onNext} 
+          disabled={isNextDisabled}
+          className="bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl font-bold shadow-md hover:bg-blue-700 flex items-center gap-1.5 text-sm transition-all active:scale-95"
+        >
           Devam Et <ChevronRight size={18} />
         </button>
       </div>

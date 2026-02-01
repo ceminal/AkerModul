@@ -58,10 +58,8 @@ export const Stepper: React.FC<StepperProps> = ({ currentStep, onStepClick }) =>
                   )}
                 </div>
 
-                {/* Floating Icon Indicator for Active Step */}
                 {isActive && (
                   <div className="absolute -top-8 bg-blue-600 dark:bg-blue-500 text-white p-1 rounded-md shadow animate-bounce">
-                    {/* DÜZELTME BURADA: cloneElement yerine doğrudan bileşen kullanımı */}
                     <StepIcon size={12} />
                     
                     <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-blue-600 dark:bg-blue-500 rotate-45" />

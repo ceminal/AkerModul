@@ -56,7 +56,7 @@ export const StepPaintSelection: React.FC<Props> = ({ selectedPaints, onSelect, 
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 h-full flex flex-col">
 
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Boya Seçimi</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Ürün Seçimi</h2>
         <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
           Kullanmak istediğiniz ürünleri ve adetlerini belirleyin.
         </p>

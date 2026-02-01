@@ -1,5 +1,5 @@
 import React from 'react';
-import { Printer, Download, Share2, Edit3, CheckCircle2 } from 'lucide-react';
+import { Printer, Download, Edit3, CheckCircle2 } from 'lucide-react';
 import { AppState } from '../../types';
 import { PAINT_PRODUCTS } from '../../constants';
 // Logonu import et (AdminLayout'taki gibi)
@@ -12,8 +12,25 @@ interface Props {
 }
 
 export const StepQuote: React.FC<Props> = ({ state, totalPrice, onEdit }) => {
-  const selectedPaint = PAINT_PRODUCTS.find(p => p.id === state.selectedPaintId);
   const dateStr = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'numeric', year: 'numeric' });
+
+  // Proje Tipi Etiketi
+  const getProjectTypeLabel = () => {
+    switch (state.projectType) {
+      case 'Residential': return 'Konut / Ev';
+      case 'Commercial': return 'Ticari / Ofis';
+      case 'Industrial': return 'Endüstriyel / Fabrika';
+      case 'Construction': return 'İnşai İşler';
+      default: return '-';
+    }
+  };
+
+  // Büyüklük Etiketi
+  const getSizeLabel = () => {
+    if (state.projectType === 'Residential') return state.roomCount;
+    return state.squareMeter || '-';
+  };
+
   return (
     <div className="animate-in zoom-in-95 duration-500">
 
@@ -41,7 +58,7 @@ export const StepQuote: React.FC<Props> = ({ state, totalPrice, onEdit }) => {
             <img src={logoImg} alt="Logo" className="h-10 w-auto" />
             <div>
               <h1 className="text-xl font-bold text-gray-900 tracking-tight">Aker GROUP</h1>
-              <p className="text-[10px] text-gray-500 uppercase tracking-widest">Boya & Dekorasyon Hizmetleri</p>
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest">Mimarlık, İnşaat & Taahhüt Hizmetleri</p>
             </div>
           </div>
           <div className="text-right">
@@ -55,7 +72,11 @@ export const StepQuote: React.FC<Props> = ({ state, totalPrice, onEdit }) => {
         <div className="mb-8">
           <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">Sayın Müşterimiz,</h2>
           <p className="text-xs text-gray-600 leading-relaxed">
-            Talep etmiş olduğunuz <strong>{state.roomCount} {state.projectType === 'Residential' ? 'Konut' : 'İş Yeri'}</strong> boyama projesi için hazırladığımız fiyat teklifi ve detaylar aşağıda bilgilerinize sunulmuştur.
+            {state.mainCategory === 'Malzeme' ? (
+               <>Talep etmiş olduğunuz <strong>Malzeme Tedariği</strong> için hazırladığımız fiyat teklifi ve detaylar aşağıda bilgilerinize sunulmuştur.</>
+            ) : (
+               <>Talep etmiş olduğunuz <strong>{getSizeLabel()} {getProjectTypeLabel()}</strong> projesi için hazırladığımız fiyat teklifi ve detaylar aşağıda bilgilerinize sunulmuştur.</>
+            )}
           </p>
         </div>
 
@@ -64,38 +85,76 @@ export const StepQuote: React.FC<Props> = ({ state, totalPrice, onEdit }) => {
           <table className="w-full text-xs text-left">
             <thead className="bg-gray-50 text-gray-500 font-bold uppercase">
               <tr>
-                <th className="px-4 py-3 border-b border-gray-200">Hizmet / Ürün</th>
-                <th className="px-4 py-3 border-b border-gray-200">Açıklama</th>
+                <th className="px-4 py-3 border-b border-gray-200">Başlık</th>
+                <th className="px-4 py-3 border-b border-gray-200">Detay</th>
                 <th className="px-4 py-3 border-b border-gray-200 text-right">Durum</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
+              
+              {/* Hizmet Türü */}
               <tr>
-                <td className="px-4 py-3 font-semibold">Proje Tipi</td>
-                <td className="px-4 py-3 text-gray-600">{state.projectType === 'Residential' ? 'Ev Boyama' : 'Ofis Boyama'} ({state.roomCount})</td>
+                <td className="px-4 py-3 font-semibold">Hizmet Türü</td>
+                <td className="px-4 py-3 text-gray-600">{state.mainCategory}</td>
                 <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-green-500" /></td>
               </tr>
+
+              {/* Kategori / Proje Tipi */}
               <tr>
-                <td className="px-4 py-3 font-semibold">Uygulama Alanı</td>
+                <td className="px-4 py-3 font-semibold">
+                    {state.mainCategory === 'Malzeme' ? 'Ürün Grubu' : 'Proje Tipi'}
+                </td>
                 <td className="px-4 py-3 text-gray-600">
-                  {state.scope === 'Whole'
-                    ? 'Tüm Daire (Duvar + Tavan)'
-                    : state.selectedRooms.filter(r => r.walls || r.ceiling).map(r => r.name).join(', ')}
+                    {state.mainCategory === 'Malzeme' 
+                        ? state.subCategory?.join(', ') 
+                        : getProjectTypeLabel()
+                    }
                 </td>
                 <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-green-500" /></td>
               </tr>
-              <tr>
-                <td className="px-4 py-3 font-semibold">Eşya Durumu</td>
-                <td className="px-4 py-3 text-gray-600">{state.furnishingStatus === 'Furnished' ? 'Eşyalı (Koruma Örtüsü Dahil)' : 'Boş Daire'}</td>
-                <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-green-500" /></td>
-              </tr>
-              <tr className="bg-blue-50/50">
-                <td className="px-4 py-3 font-bold text-blue-700">Seçilen Boya</td>
-                <td className="px-4 py-3 font-bold text-blue-700">
-                  {selectedPaint?.brand} - {selectedPaint?.name}
-                </td>
-                <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-blue-600" /></td>
-              </tr>
+
+              {/* Proje Detayları (Varsa) */}
+              {state.projectDetails && state.projectDetails.length > 0 && (
+                <tr>
+                    <td className="px-4 py-3 font-semibold">İş Kalemleri</td>
+                    <td className="px-4 py-3 text-gray-600">{state.projectDetails.join(', ')}</td>
+                    <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-green-500" /></td>
+                </tr>
+              )}
+
+              {/* Büyüklük (Taahhüt ise) */}
+              {state.mainCategory === 'Taahhüt' && (
+                  <tr>
+                    <td className="px-4 py-3 font-semibold">Proje Alanı</td>
+                    <td className="px-4 py-3 text-gray-600">{getSizeLabel()}</td>
+                    <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-green-500" /></td>
+                  </tr>
+              )}
+
+              {/* Eşya Durumu (Sadece Konut ve Taahhüt ise) */}
+              {state.mainCategory === 'Taahhüt' && state.projectType === 'Residential' && (
+                <tr>
+                    <td className="px-4 py-3 font-semibold">Eşya Durumu</td>
+                    <td className="px-4 py-3 text-gray-600">{state.furnishingStatus === 'Furnished' ? 'Eşyalı' : 'Boş'}</td>
+                    <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-green-500" /></td>
+                </tr>
+              )}
+
+              {/* Uygulama Kapsamı (Taahhüt ise) */}
+              {state.mainCategory === 'Taahhüt' && (
+                <tr>
+                    <td className="px-4 py-3 font-semibold">Uygulama Kapsamı</td>
+                    <td className="px-4 py-3 text-gray-600">
+                    {state.scope === 'Whole'
+                        ? 'Tüm Alan (Anahtar Teslim)'
+                        : state.selectedRooms.filter(r => r.walls || r.ceiling).map(r => r.name).join(', ') || 'Bölgesel'}
+                    </td>
+                    <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-green-500" /></td>
+                </tr>
+              )}
+
+              {/* Seçilen Ürünler */}
+              {state.selectedPaints.length > 0 && (
               <tr className="bg-blue-50/50">
                 <td className="px-4 py-3 font-bold text-blue-700 align-top">Seçilen Ürünler</td>
                 <td className="px-4 py-3 font-bold text-blue-700">
@@ -115,6 +174,7 @@ export const StepQuote: React.FC<Props> = ({ state, totalPrice, onEdit }) => {
                 </td>
                 <td className="px-4 py-3 text-right align-top"><CheckCircle2 size={14} className="inline text-blue-600" /></td>
               </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -124,7 +184,10 @@ export const StepQuote: React.FC<Props> = ({ state, totalPrice, onEdit }) => {
           <div className="text-xs text-gray-400 max-w-[200px]">
             <p className="mb-4 font-semibold text-gray-500">Onay ve İmza</p>
             <div className="h-10 border-b border-gray-300 border-dashed w-full mb-1"></div>
-            <p>Müşteri Adı Soyadı</p>
+            <p className="font-bold text-gray-700">
+              {state.customer.name} {state.customer.surname}
+            </p>
+            {state.customer.companyName && <p>{state.customer.companyName}</p>}
           </div>
 
           <div className="text-right">
