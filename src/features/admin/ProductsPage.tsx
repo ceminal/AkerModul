@@ -1,22 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Search, MoreHorizontal, Package, Edit2, Trash2, X } from 'lucide-react';
 import { Modal } from '../../components/Modal';
+import axios from 'axios';
 
-// Tip Tanımlaması
 interface Product {
   id: number;
   name: string;
-  category: string;
+  categoryId: number;
   price: number;
   stock: number;
 }
 
 export const ProductsPage: React.FC = () => {
   // --- STATE ---
-  const [products, setProducts] = useState<Product[]>([
-    { id: 1, name: 'Marshall Silikonlu Mat', category: 'İç Cephe', price: 2500, stock: 45 },
-    { id: 2, name: 'Filli Boya Momento', category: 'İç Cephe', price: 2800, stock: 32 },
-  ]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -34,7 +33,24 @@ export const ProductsPage: React.FC = () => {
     setFormData({ name: '', category: 'İç Cephe', price: '', stock: '' });
     setEditingId(null);
     setActiveMenuId(null); // Menüyü kapat
+    setError(null);
   };
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('/Products');
+      setProducts(response.data);
+    } catch (err) {
+      console.error("Ürünler yüklenirken hata:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const openAddModal = () => {
     resetForm();
@@ -53,56 +69,57 @@ export const ProductsPage: React.FC = () => {
   // Düzenle Butonuna Basınca
   const handleEditClick = (product: Product) => {
     setEditingId(product.id);
+    setError(null);
     setFormData({
       name: product.name,
-      category: product.category,
+      categroyId: 1,
       price: product.price.toString(),
-      stock: product.stock.toString(),
+      stock: product.stock,
     });
     setActiveMenuId(null); // Menüyü kapat
     setIsModalOpen(true); // Modalı aç
   };
 
   // Sil Butonuna Basınca
-  const handleDeleteClick = (id: number) => {
+  const handleDeleteClick = async (id: number) => {
     if (window.confirm('Bu ürünü silmek istediğinize emin misiniz?')) {
-      setProducts(products.filter(p => p.id !== id));
+      try {
+        await axios.delete(`/Products/${id}`);
+        fetchProducts();
+      } catch (err) {
+        alert("Silme işlemi başarısız oldu.");
+      }
     }
     setActiveMenuId(null);
   };
 
   // Form Gönderimi (Ekleme veya Güncelleme)
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
-    // 1. Güncelleme Modu
-    if (editingId) {
-      setProducts(products.map(p =>
-        p.id === editingId
-          ? {
-            ...p,
-            name: formData.name,
-            category: formData.category,
-            price: Number(formData.price),
-            stock: Number(formData.stock)
-          }
-          : p
-      ));
-    }
-    // 2. Yeni Ekleme Modu
-    else {
-      const newProduct: Product = {
-        id: products.length + 1,
+    try {
+      const payload = {
         name: formData.name,
-        category: formData.category,
-        price: Number(formData.price),
-        stock: Number(formData.stock),
+        image: null,
+        categoryId: 1,
+        details: null,
+        price: formData.price,
+        stock: formData.stock
       };
-      setProducts([...products, newProduct]);
-    }
 
-    setIsModalOpen(false);
-    resetForm();
+      if (editingId) {
+        await axios.put('/Products', { ...payload, id: editingId });
+      } else {
+        await axios.post('/Products', payload);
+      }
+
+      setIsModalOpen(false);
+      resetForm();
+      fetchProducts();
+    } catch (err: any) {
+      setError("İşlem sırasında bir hata oluştu.");
+    }
   };
 
   // Sayfanın herhangi bir yerine tıklayınca menüyü kapatmak için
@@ -145,76 +162,80 @@ export const ProductsPage: React.FC = () => {
         </div>
 
         <div className="overflow-x-auto min-h-[300px]">
-          <table className="w-full text-left text-sm text-gray-600 dark:text-slate-300">
-            <thead className="bg-gray-50 dark:bg-slate-800/50 text-xs uppercase font-bold text-gray-400 dark:text-slate-500">
-              <tr>
-                <th className="px-6 py-4">Ürün Adı</th>
-                <th className="px-6 py-4">Kategori</th>
-                <th className="px-6 py-4">Fiyat</th>
-                <th className="px-6 py-4">Stok</th>
-                <th className="px-6 py-4 text-right">İşlem</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
-              {products.map((product) => (
-                <tr key={product.id} className="hover:bg-blue-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                  <td className="px-6 py-4 font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                      <Package size={16} />
-                    </div>
-                    {product.name}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="px-2 py-1 rounded-md bg-gray-100 dark:bg-slate-800 text-xs font-bold text-gray-500 dark:text-slate-400 border border-gray-200 dark:border-slate-700">
-                      {product.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">₺{product.price}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${product.stock > 20 ? 'bg-green-500' : 'bg-red-500'}`} />
-                      {product.stock} Adet
-                    </div>
-                  </td>
-
-                  {/* --- İŞLEM MENÜSÜ --- */}
-                  <td className="px-6 py-4 text-right relative">
-                    {/* 3 Nokta Butonu */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation(); // Sayfa tıklamasını engelle
-                        toggleMenu(product.id);
-                      }}
-                      className={`p-2 rounded-lg transition-colors ${activeMenuId === product.id ? 'bg-blue-100 text-blue-600 dark:bg-slate-700' : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-400 hover:text-gray-600'}`}
-                    >
-                      <MoreHorizontal size={18} />
-                    </button>
-
-                    {/* Dropdown Menü */}
-                    {activeMenuId === product.id && (
-                      <div className="absolute right-8 top-8 w-36 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
-                        <button
-                          onClick={() => handleEditClick(product)}
-                          className="w-full text-left px-4 py-2.5 text-xs font-bold text-gray-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-600 flex items-center gap-2"
-                        >
-                          <Edit2 size={14} /> Düzenle
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(product.id)}
-                          className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
-                        >
-                          <Trash2 size={14} /> Sil
-                        </button>
-                      </div>
-                    )}
-                  </td>
+          {loading ? (
+            <div className="text-center py-20 text-gray-400">Yükleniyor...</div>
+          ) : (
+            <table className="w-full text-left text-sm text-gray-600 dark:text-slate-300">
+              <thead className="bg-gray-50 dark:bg-slate-800/50 text-xs uppercase font-bold text-gray-400 dark:text-slate-500">
+                <tr>
+                  <th className="px-6 py-4">Ürün Adı</th>
+                  <th className="px-6 py-4">Kategori</th>
+                  <th className="px-6 py-4">Fiyat</th>
+                  <th className="px-6 py-4">Stok</th>
+                  <th className="px-6 py-4 text-right">İşlem</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
+                {products.map((product) => (
+                  <tr key={product.id} className="hover:bg-blue-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="px-6 py-4 font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                        <Package size={16} />
+                      </div>
+                      {product.name}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 rounded-md bg-gray-100 dark:bg-slate-800 text-xs font-bold text-gray-500 dark:text-slate-400 border border-gray-200 dark:border-slate-700">
+                        {product.categoryName}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">₺{product.price}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${product.stock > 20 ? 'bg-green-500' : 'bg-red-500'}`} />
+                        {product.stock} Adet
+                      </div>
+                    </td>
+
+                    {/* --- İŞLEM MENÜSÜ --- */}
+                    <td className="px-6 py-4 text-right relative">
+                      {/* 3 Nokta Butonu */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation(); // Sayfa tıklamasını engelle
+                          toggleMenu(product.id);
+                        }}
+                        className={`p-2 rounded-lg transition-colors ${activeMenuId === product.id ? 'bg-blue-100 text-blue-600 dark:bg-slate-700' : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-400 hover:text-gray-600'}`}
+                      >
+                        <MoreHorizontal size={18} />
+                      </button>
+
+                      {/* Dropdown Menü */}
+                      {activeMenuId === product.id && (
+                        <div className="absolute right-8 top-8 w-36 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+                          <button
+                            onClick={() => handleEditClick(product)}
+                            className="w-full text-left px-4 py-2.5 text-xs font-bold text-gray-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-600 flex items-center gap-2"
+                          >
+                            <Edit2 size={14} /> Düzenle
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(product.id)}
+                            className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
+                          >
+                            <Trash2 size={14} /> Sil
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
 
           {/* Liste boşsa boşluk bırakalım ki tablo çökmesin */}
-          {products.length === 0 && (
+          {!loading && products.length === 0 && (
             <div className="p-8 text-center text-gray-400 text-sm">Hiç ürün bulunamadı.</div>
           )}
         </div>
@@ -226,6 +247,11 @@ export const ProductsPage: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         title={editingId ? "Ürünü Düzenle" : "Yeni Ürün Ekle"}
       >
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-xs font-bold animate-in slide-in-from-top-2">
+            {error}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
 
           <div className="space-y-1.5">
