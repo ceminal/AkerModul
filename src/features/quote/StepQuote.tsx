@@ -2,7 +2,6 @@ import React from 'react';
 import { Printer, Download, Edit3, CheckCircle2 } from 'lucide-react';
 import { AppState } from '../../types';
 import { PAINT_PRODUCTS } from '../../constants';
-// Logonu import et (AdminLayout'taki gibi)
 import logoImg from '../../assets/akerlogosiyah.png';
 
 interface Props {
@@ -73,9 +72,9 @@ export const StepQuote: React.FC<Props> = ({ state, totalPrice, onEdit }) => {
           <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">Sayın Müşterimiz,</h2>
           <p className="text-xs text-gray-600 leading-relaxed">
             {state.mainCategory === 'Malzeme' ? (
-               <>Talep etmiş olduğunuz <strong>Malzeme Tedariği</strong> için hazırladığımız fiyat teklifi ve detaylar aşağıda bilgilerinize sunulmuştur.</>
+              <>Talep etmiş olduğunuz <strong>Malzeme Tedariği</strong> için hazırladığımız fiyat teklifi ve detaylar aşağıda bilgilerinize sunulmuştur.</>
             ) : (
-               <>Talep etmiş olduğunuz <strong>{getSizeLabel()} {getProjectTypeLabel()}</strong> projesi için hazırladığımız fiyat teklifi ve detaylar aşağıda bilgilerinize sunulmuştur.</>
+              <>Talep etmiş olduğunuz <strong>{getSizeLabel()} {getProjectTypeLabel()}</strong> projesi için hazırladığımız fiyat teklifi ve detaylar aşağıda bilgilerinize sunulmuştur.</>
             )}
           </p>
         </div>
@@ -91,7 +90,7 @@ export const StepQuote: React.FC<Props> = ({ state, totalPrice, onEdit }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              
+
               {/* Hizmet Türü */}
               <tr>
                 <td className="px-4 py-3 font-semibold">Hizmet Türü</td>
@@ -102,13 +101,13 @@ export const StepQuote: React.FC<Props> = ({ state, totalPrice, onEdit }) => {
               {/* Kategori / Proje Tipi */}
               <tr>
                 <td className="px-4 py-3 font-semibold">
-                    {state.mainCategory === 'Malzeme' ? 'Ürün Grubu' : 'Proje Tipi'}
+                  {state.mainCategory === 'Malzeme' ? 'Ürün Grubu' : 'Proje Tipi'}
                 </td>
                 <td className="px-4 py-3 text-gray-600">
-                    {state.mainCategory === 'Malzeme' 
-                        ? state.subCategory?.join(', ') 
-                        : getProjectTypeLabel()
-                    }
+                  {state.mainCategory === 'Malzeme'
+                    ? state.subCategory?.join(', ')
+                    : getProjectTypeLabel()
+                  }
                 </td>
                 <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-green-500" /></td>
               </tr>
@@ -116,64 +115,64 @@ export const StepQuote: React.FC<Props> = ({ state, totalPrice, onEdit }) => {
               {/* Proje Detayları (Varsa) */}
               {state.projectDetails && state.projectDetails.length > 0 && (
                 <tr>
-                    <td className="px-4 py-3 font-semibold">İş Kalemleri</td>
-                    <td className="px-4 py-3 text-gray-600">{state.projectDetails.join(', ')}</td>
-                    <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-green-500" /></td>
+                  <td className="px-4 py-3 font-semibold">İş Kalemleri</td>
+                  <td className="px-4 py-3 text-gray-600">{state.projectDetails.join(', ')}</td>
+                  <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-green-500" /></td>
                 </tr>
               )}
 
               {/* Büyüklük (Taahhüt ise) */}
-              {state.mainCategory === 'Taahhüt' && (
-                  <tr>
-                    <td className="px-4 py-3 font-semibold">Proje Alanı</td>
-                    <td className="px-4 py-3 text-gray-600">{getSizeLabel()}</td>
-                    <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-green-500" /></td>
-                  </tr>
+              {state.mainCategory === 'Taahhüt' && state.projectType === 'Residential' && (
+                <tr>
+                  <td className="px-4 py-3 font-semibold">Proje Alanı</td>
+                  <td className="px-4 py-3 text-gray-600">{getSizeLabel()}</td>
+                  <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-green-500" /></td>
+                </tr>
               )}
 
               {/* Eşya Durumu (Sadece Konut ve Taahhüt ise) */}
               {state.mainCategory === 'Taahhüt' && state.projectType === 'Residential' && (
                 <tr>
-                    <td className="px-4 py-3 font-semibold">Eşya Durumu</td>
-                    <td className="px-4 py-3 text-gray-600">{state.furnishingStatus === 'Furnished' ? 'Eşyalı' : 'Boş'}</td>
-                    <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-green-500" /></td>
+                  <td className="px-4 py-3 font-semibold">Eşya Durumu</td>
+                  <td className="px-4 py-3 text-gray-600">{state.furnishingStatus === 'Furnished' ? 'Eşyalı' : 'Boş'}</td>
+                  <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-green-500" /></td>
                 </tr>
               )}
 
               {/* Uygulama Kapsamı (Taahhüt ise) */}
               {state.mainCategory === 'Taahhüt' && (
                 <tr>
-                    <td className="px-4 py-3 font-semibold">Uygulama Kapsamı</td>
-                    <td className="px-4 py-3 text-gray-600">
+                  <td className="px-4 py-3 font-semibold">Uygulama Kapsamı</td>
+                  <td className="px-4 py-3 text-gray-600">
                     {state.scope === 'Whole'
-                        ? 'Tüm Alan (Anahtar Teslim)'
-                        : state.selectedRooms.filter(r => r.walls || r.ceiling).map(r => r.name).join(', ') || 'Bölgesel'}
-                    </td>
-                    <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-green-500" /></td>
+                      ? 'Tüm Alan (Anahtar Teslim)'
+                      : state.selectedRooms.filter(r => r.walls || r.ceiling).map(r => r.name).join(', ') || 'Bölgesel'}
+                  </td>
+                  <td className="px-4 py-3 text-right"><CheckCircle2 size={14} className="inline text-green-500" /></td>
                 </tr>
               )}
 
               {/* Seçilen Ürünler */}
               {state.selectedPaints.length > 0 && (
-              <tr className="bg-blue-50/50">
-                <td className="px-4 py-3 font-bold text-blue-700 align-top">Seçilen Ürünler</td>
-                <td className="px-4 py-3 font-bold text-blue-700">
-                  <ul className="space-y-1">
-                    {state.selectedPaints.map(item => {
-                      const product = PAINT_PRODUCTS.find(p => p.id === item.id);
-                      if (!product) return null;
-                      return (
-                        <li key={item.id} className="flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 bg-blue-400 rounded-full inline-block" />
-                          {product.brand} - {product.name}
-                          <span className="text-xs bg-blue-100 text-blue-700 px-1.5 rounded ml-1 font-normal">x{item.quantity}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </td>
-                <td className="px-4 py-3 text-right align-top"><CheckCircle2 size={14} className="inline text-blue-600" /></td>
-              </tr>
+                <tr className="bg-blue-50/50">
+                  <td className="px-4 py-3 font-bold text-blue-700 align-top">Seçilen Ürünler</td>
+                  <td className="px-4 py-3 font-bold text-blue-700">
+                    <ul className="space-y-1">
+                      {state.selectedPaints.map(item => {
+                        const product = PAINT_PRODUCTS.find(p => p.id === item.id);
+                        if (!product) return null;
+                        return (
+                          <li key={item.id} className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-blue-400 rounded-full inline-block" />
+                            {product.brand} - {product.name}
+                            <span className="text-xs bg-blue-100 text-blue-700 px-1.5 rounded ml-1 font-normal">x{item.quantity}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </td>
+                  <td className="px-4 py-3 text-right align-top"><CheckCircle2 size={14} className="inline text-blue-600" /></td>
+                </tr>
               )}
             </tbody>
           </table>

@@ -7,33 +7,66 @@ interface Product {
   id: number;
   name: string;
   categoryId: number;
+  categoryName?: string;
   price: number;
   stock: number;
 }
 
+interface Category {
+  id: number;
+  name: string;
+  parentCategoryId: number | null;
+}
+
 export const ProductsPage: React.FC = () => {
-  // --- STATE ---
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedMainCategory, setSelectedMainCategory] = useState<number>(0);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<number>(0); // NEW: Track mid-level selection
 
-  // Hangi ürünün menüsü (3 nokta) açık?
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
 
-  // Hangi ürün düzenleniyor?
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  const [formData, setFormData] = useState({ name: '', category: 'İç Cephe', price: '', stock: '' });
+  const [formData, setFormData] = useState({ name: '', categoryId: 0, price: '', stock: '' });
 
-  // --- YARDIMCI FONKSİYONLAR ---
 
-  const resetForm = () => {
-    setFormData({ name: '', category: 'İç Cephe', price: '', stock: '' });
-    setEditingId(null);
-    setActiveMenuId(null); // Menüyü kapat
-    setError(null);
+  /* Helper to sort categories hierarchically */
+  const sortedCategories = React.useMemo(() => {
+    // Helper to normalize parentId for comparison (treat null, undefined, 0 as 'no parent')
+    const getParentId = (cat: Category) => cat.parentCategoryId || 0;
+
+    const buildHierarchy = (parentId: number = 0, level: number = 0): { category: Category, level: number }[] => {
+      const children = categories.filter(c => getParentId(c) === parentId);
+
+      return children.flatMap(c => [
+        { category: c, level },
+        ...buildHierarchy(c.id, level + 1)
+      ]);
+    };
+    return buildHierarchy(0); // Start looking for roots (parent=0)
+  }, [categories]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get('/Categories');
+
+      const mappedData = response.data.map((item: any) => ({
+        id: Number(item.id || item.Id),
+        name: item.name || item.Name,
+        // SİHİRLİ DOKUNUŞ BURADA:
+        // Eğer null veya undefined ise 0 yap. Değilse sayıyı al.
+        parentCategoryId: (item.parentCategoryId || item.ParentCategoryId) ? Number(item.parentCategoryId || item.ParentCategoryId) : 0
+      }));
+
+      setCategories(mappedData);
+    } catch (err) {
+      console.error("Hata:", err);
+    }
   };
 
   const fetchProducts = async () => {
@@ -49,6 +82,7 @@ export const ProductsPage: React.FC = () => {
   };
 
   useEffect(() => {
+    fetchCategories();
     fetchProducts();
   }, []);
 
@@ -57,7 +91,6 @@ export const ProductsPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  // Menüyü aç/kapa
   const toggleMenu = (id: number) => {
     if (activeMenuId === id) {
       setActiveMenuId(null);
@@ -66,21 +99,65 @@ export const ProductsPage: React.FC = () => {
     }
   };
 
-  // Düzenle Butonuna Basınca
+  const resetForm = () => {
+    setFormData({ name: '', categoryId: 0, price: '', stock: '' });
+    setEditingId(null);
+    setActiveMenuId(null);
+    setError(null);
+    setSelectedMainCategory(0);
+    setSelectedSubCategory(0); // Reset sub selection
+  };
+
   const handleEditClick = (product: Product) => {
     setEditingId(product.id);
     setError(null);
+
+    // --- REVERSE LOOKUP FOR HIERARCHY ---
+    // 1. Find the assigned category
+    const targetCat = categories.find(c => c.id === product.categoryId);
+
+    if (targetCat) {
+      const parentId = targetCat.parentCategoryId;
+
+      if (!parentId || parentId === 0) {
+        // Level 1: Assigned to Main Category
+        setSelectedMainCategory(targetCat.id);
+        setSelectedSubCategory(0);
+      } else {
+        // It has a parent. Find the parent.
+        const parentCat = categories.find(c => c.id === parentId);
+
+        if (parentCat) {
+          const grandParentId = parentCat.parentCategoryId;
+
+          if (!grandParentId || grandParentId === 0) {
+            // Level 2: Parent is Main. Target is Sub.
+            setSelectedMainCategory(parentCat.id);
+            setSelectedSubCategory(targetCat.id);
+          } else {
+            // Level 3: Parent is Sub. Grandparent is Main.
+            setSelectedMainCategory(grandParentId);
+            setSelectedSubCategory(parentCat.id);
+          }
+        }
+      }
+    } else {
+      // Fallback
+      setSelectedMainCategory(0);
+      setSelectedSubCategory(0);
+    }
+    // ---------------------------------------
+
     setFormData({
       name: product.name,
-      categroyId: 1,
+      categoryId: product.categoryId,
       price: product.price.toString(),
-      stock: product.stock,
+      stock: product.stock.toString(),
     });
-    setActiveMenuId(null); // Menüyü kapat
-    setIsModalOpen(true); // Modalı aç
+    setActiveMenuId(null);
+    setIsModalOpen(true);
   };
 
-  // Sil Butonuna Basınca
   const handleDeleteClick = async (id: number) => {
     if (window.confirm('Bu ürünü silmek istediğinize emin misiniz?')) {
       try {
@@ -102,10 +179,10 @@ export const ProductsPage: React.FC = () => {
       const payload = {
         name: formData.name,
         image: null,
-        categoryId: 1,
+        categoryId: Number(formData.categoryId),
         details: null,
-        price: formData.price,
-        stock: formData.stock
+        price: Number(formData.price),
+        stock: Number(formData.stock)
       };
 
       if (editingId) {
@@ -266,18 +343,102 @@ export const ProductsPage: React.FC = () => {
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-gray-500 dark:text-slate-400">Kategori</label>
-            <select
-              value={formData.category}
-              onChange={e => setFormData({ ...formData, category: e.target.value })}
-              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:text-white text-sm"
-            >
-              <option value="İç Cephe">İç Cephe</option>
-              <option value="Dış Cephe">Dış Cephe</option>
-              <option value="Tavan">Tavan</option>
-              <option value="Astarlar">Astarlar</option>
-            </select>
+          {/* --- KATEGORİ SEÇİM ALANI (3 SEVİYE SİSTEMİ) --- */}
+          <div className="space-y-4">
+
+            {/* SEVİYE 1: ANA KATEGORİ SEÇİMİ (BUTONLAR) */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-500 dark:text-slate-400">Ürün Grubu (Marka)</label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {categories
+                  .filter(c => c.parentCategoryId === null || c.parentCategoryId === 0)
+                  .map(cat => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedMainCategory(cat.id);
+                        setSelectedSubCategory(0); // Alt seçimleri sıfırla
+                        setFormData({ ...formData, categoryId: cat.id }); // Formu güncelle
+                      }}
+                      className={`
+                        px-2 py-3 rounded-xl text-sm font-bold border transition-all duration-200 active:scale-95 flex items-center justify-center text-center shadow-sm
+                        ${selectedMainCategory === cat.id
+                          ? 'bg-blue-600 text-white border-blue-600 ring-2 ring-blue-200 dark:ring-blue-900'
+                          : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:border-blue-300 hover:bg-blue-50 dark:hover:bg-slate-700'
+                        }
+                      `}
+                    >
+                      {cat.name.toUpperCase()}
+                    </button>
+                  ))
+                }
+              </div>
+            </div>
+
+            {/* SEVİYE 2: ALT KATEGORİ SEÇİMİ */}
+            {selectedMainCategory !== 0 && (
+              <div className="space-y-1.5 animate-in slide-in-from-top-2 fade-in duration-300">
+                <label className="text-xs font-bold text-gray-500 dark:text-slate-400">Alt Ürün Grubu</label>
+                <select
+                  value={selectedSubCategory}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    setSelectedSubCategory(val);
+                    setFormData({ ...formData, categoryId: val === 0 ? selectedMainCategory : val });
+                  }}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:text-white text-sm font-medium"
+                >
+                  <option value={0}>
+                    {categories.some(c => c.parentCategoryId === selectedMainCategory)
+                      ? "Seçiniz..."
+                      : "Bu kategorinin alt grubu yoktur"
+                    }
+                  </option>
+                  {categories
+                    .filter(c => c.parentCategoryId === selectedMainCategory)
+                    .map(cat => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))
+                  }
+                </select>
+              </div>
+            )}
+
+            {/* SEVİYE 3: 2. ALT KATEGORİ SEÇİMİ (Grandchild) */}
+            {/* Eğer SubCategory seçiliyse ve onun da çocukları varsa göster */}
+            {selectedSubCategory !== 0 && categories.some(c => c.parentCategoryId === selectedSubCategory) && (
+              <div className="space-y-1.5 animate-in slide-in-from-top-2 fade-in duration-300">
+                <label className="text-xs font-bold text-gray-500 dark:text-slate-400">Model / Çeşit</label>
+                <select
+                  value={
+                    // Eğer formdaki ID gerçekten bu seviyenin bir elemanıysa onu göster, yoksa 0 (Seçiniz)
+                    (categories.find(c => c.id === formData.categoryId)?.parentCategoryId === selectedSubCategory)
+                      ? formData.categoryId
+                      : 0
+                  }
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    // 0 seçerse bir üst seviyeye (selectedSubCategory) dön
+                    setFormData({ ...formData, categoryId: val === 0 ? selectedSubCategory : val });
+                  }}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:text-white text-sm font-medium"
+                >
+                  <option value={0}>Model Seçiniz...</option>
+                  {categories
+                    .filter(c => c.parentCategoryId === selectedSubCategory)
+                    .map(cat => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))
+                  }
+                </select>
+              </div>
+            )}
+
           </div>
 
           <div className="grid grid-cols-2 gap-4">

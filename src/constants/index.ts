@@ -6,16 +6,17 @@ import {
   CheckCircle2,
   Briefcase
 } from 'lucide-react';
-import { Room, RoomCount } from '../types';
+import { Room, RoomCount, AppStep } from '../types';
 
 // --- ADIMLAR ---
 export const STEPS = [
-  { id: 0, title: 'Kategori', icon: Briefcase },
-  { id: 1, title: 'Proje', icon: Home },
-  { id: 2, title: 'Detay', icon: Building2 },
-  { id: 3, title: 'Kapsam', icon: LayoutPanelLeft },
-  { id: 4, title: 'Ürün', icon: Paintbrush },
-  { id: 5, title: 'Teklif', icon: CheckCircle2 },
+  // 0: Customer Info (Hidden)
+  // 1: Category (Hidden)
+  { id: AppStep.PROJECT_TYPE, title: 'Proje', icon: Home },
+  { id: AppStep.HOME_DETAILS, title: 'Detay', icon: Building2 },
+  { id: AppStep.SCOPE, title: 'Kapsam', icon: LayoutPanelLeft },
+  { id: AppStep.PAINT_SELECTION, title: 'Ürün', icon: Paintbrush },
+  { id: AppStep.QUOTE, title: 'Teklif', icon: CheckCircle2 },
 ];
 
 // --- EKSİK OLAN KISIM EKLENDİ: ODA SEÇENEKLERİ ---
