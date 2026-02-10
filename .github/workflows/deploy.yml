@@ -21,6 +21,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ./client/Dockerfile
           push: true
           # Buradaki ismi 1. adımdaki imaj ismiyle aynı yap
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/app-app-client-1:latest
