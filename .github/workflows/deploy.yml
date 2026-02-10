@@ -1,4 +1,4 @@
-name: Docker CD - Auto Deploy
+name: Deploy Client Only
 
 on:
   push:
@@ -9,41 +9,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v4
+      - name: Build and Push Client Image
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          # Buradaki 'proje-adi' Docker Hub'daki depo adın olsun
+          # Buradaki ismi 1. adımdaki imaj ismiyle aynı yap
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/app-app-client-1:latest
+          build-args: |
+            VITE_ROOT_URL=${VITE_ROOT_URL}
 
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to VPS via SSH
+      - name: SSH and Update Client
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            # 1. Senin bulduğun klasöre git
             cd /home/deploy
-            
-            # 2. Docker Hub'dan yeni imajı çek
-            docker compose pull
-            
-            # 3. Sadece değişen servisi (imajı) güncelle ve arka planda çalıştır
-            docker compose up -d
-            
-            # 4. Eski ve kullanılmayan imajları temizle (sunucun dolmasın)
+            # Sadece client imajını çek
+            docker compose pull app-client
+            # Sadece client konteynerini güncelle (diğerleri kapanmaz)
+            docker compose up -d app-client
+            # Eski imajları temizle
             docker image prune -f
