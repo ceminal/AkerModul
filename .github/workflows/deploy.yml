@@ -42,10 +42,21 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /home/deploy/app
-            # Sadece client imajını çek
-            docker compose pull app-client
-            # Sadece client konteynerini güncelle (diğerleri kapanmaz)
+            echo "--- ADIM 1: Su anki konumu kontrol et ---"
+            pwd
+            
+            echo "--- ADIM 2: 'app' klasorune girmeye calis ---"
+            cd /home/deploy/app || cd app || echo "Klasor bulunamadi!"
+            
+            echo "--- ADIM 3: Klasorun icindeki dosyalari listele ---"
+            ls -la
+            
+            echo "--- ADIM 4: Docker Compose komutunu tam yol belirterek calistir ---"
+            # Burada dosya adının docker-compose.yml (veya .yaml) olduğundan emin oluyoruz
+            docker compose -f docker-compose.yml pull app-client || docker compose -f docker-compose.yaml pull app-client
+            
+            echo "--- ADIM 5: Konteyneri guncelle ---"
             docker compose up -d app-client
-            # Eski imajları temizle
+            
+            echo "--- ADIM 6: Temizlik ---"
             docker image prune -f
