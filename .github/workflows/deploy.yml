@@ -20,7 +20,7 @@ jobs:
       - name: Build and Push Client Image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./client
           file: ./client/Dockerfile
           push: true
           # Buradaki ismi 1. adımdaki imaj ismiyle aynı yap
