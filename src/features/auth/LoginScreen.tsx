@@ -82,7 +82,7 @@ export const LoginScreen: React.FC<Props> = ({ onLoginSuccess }) => {
             </div>
 
             <div className={`${commonCardClass} rounded-3xl p-8`}>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-5">Hoş Geldiniz V2</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-5">Hoş Geldiniz</h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-1.5">
