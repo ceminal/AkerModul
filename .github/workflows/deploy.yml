@@ -23,13 +23,13 @@ jobs:
       - name: Build and Push Client Image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./client
           file: ./Dockerfile
           push: true
           # Buradaki ismi 1. adımdaki imaj ismiyle aynı yap
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/app-app-client-1:latest
-          build-args: |
-            VITE_ROOT_URL=${VITE_ROOT_URL}
+          args: |
+            VITE_ROOT_URL=/api
 
   deploy:
     needs: build-and-push
