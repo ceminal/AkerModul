@@ -42,7 +42,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /home/deploy
+            cd /home/deploy/app
             # Sadece client imajını çek
             docker compose pull app-client
             # Sadece client konteynerini güncelle (diğerleri kapanmaz)
